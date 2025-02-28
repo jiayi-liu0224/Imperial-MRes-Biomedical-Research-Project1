@@ -1,0 +1,1180 @@
+---
+title: "Estimate Visualization"
+output: html_document
+date: "2025-01-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(phytools)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(bayestestR)
+library(ggpubr)
+library(reshape2)
+library(extrafont)
+N_c<-100
+N_t<-100
+DATA_ROOT<-"D:/MyDocument/ICR/Project1/Data"
+IMAGE_ROOT<-"D:/MyDocument/ICR/Project1/Image"
+loadfonts(device = 'win')
+```
+
+## Visualize the estimation for non_hier models at a fit sig2
+```{r}
+data1<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier1_trait.rds'))
+fit1<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier1_fit.rds'))
+data2<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier2_trait.rds'))
+fit2<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier2_fit.rds'))
+data3<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier3_trait.rds'))
+fit3<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier3_fit.rds'))
+data4<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier4_trait.rds'))
+fit4<-readRDS(file.path(DATA_ROOT,'non_hier_fit/non_hier4_fit.rds'))
+```
+
+###绘制估计sig2的分布和真实值的差异
+```{r,warning=FALSE}
+df1 <- data.frame(value=apply(as.data.frame(fit1)[,1:100],2,mean))
+df2 <- data.frame(value=apply(as.data.frame(fit2)[,1:100],2,mean))
+df3 <- data.frame(value=apply(as.data.frame(fit3)[,1:100],2,mean))
+df4 <- data.frame(value=apply(as.data.frame(fit4)[,1:100],2,mean))
+
+p1<-ggplot(df1, aes(x = value)) +
+  geom_histogram(bins = 20,color='#0070C0',fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df1$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.001, color = "#E39C20", linetype = "dashed", linewidth = 1.2)+
+  labs(x = "value",y = "density",title=expression(bold(paste(sigma^2,"=0.001")))) +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 14), 
+    axis.text.y = element_text(family = "Calibri", size = 14),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 16,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p2<-ggplot(df2, aes(x = value)) +
+  geom_histogram(bins = 20,color='#0070C0',fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df2$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.01, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = expression(bold(paste(sigma^2,"=0.01")))) +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 14), 
+    axis.text.y = element_text(family = "Calibri", size = 14),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 16,face = 'bold')
+    ,plot.title = element_text(hjust = 0.5))
+
+
+p3<-ggplot(df3, aes(x = value)) +
+  geom_histogram(bins = 20,color='#0070C0',fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df3$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.05, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = expression(bold(paste(sigma^2,"=0.05")))) +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 14), 
+    axis.text.y = element_text(family = "Calibri", size = 14),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 16,face = 'bold')
+    ,plot.title = element_text(hjust = 0.5))
+
+p4<-ggplot(df4, aes(x = value)) +
+  geom_histogram(bins = 20,color='#0070C0',fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df4$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.1, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = expression(bold(paste(sigma^2,"=0.1")))) +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 14), 
+    axis.text.y = element_text(family = "Calibri", size = 14),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 16,face = 'bold')
+    ,plot.title = element_text(hjust = 0.5))
+p_nh_fit<-ggarrange(p1,p2,p3,p4,ncol = 2,nrow = 2)
+
+ggsave(file.path(IMAGE_ROOT,"non_hier_fit/sig2_estimate_distribution.jpg"),p_nh_fit,width=10,height=8)
+```
+
+##Visualize non_hier model when sig2 follows normal distribution
+
+```{r}
+data1<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier1_data.rds'))
+fit1<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier1_fit.rds'))
+data2<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier2_data.rds'))
+fit2<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier2_fit.rds'))
+data3<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier3_data.rds'))
+fit3<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier3_fit.rds'))
+data4<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier4_data.rds'))
+fit4<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier4_fit.rds'))
+
+```
+
+
+```{r}
+non_hier1_sig2<-apply(as.data.frame(fit1)[,1:100],2,mean)
+non_hier1_sig2_real<-data1[[1]]
+non_hier2_sig2<-apply(as.data.frame(fit2)[,1:100],2,mean)
+non_hier2_sig2_real<-data2[[1]]
+non_hier3_sig2<-apply(as.data.frame(fit3)[,1:100],2,mean)
+non_hier3_sig2_real<-data3[[1]]
+non_hier4_sig2<-apply(as.data.frame(fit4)[,1:100],2,mean)
+non_hier4_sig2_real<-data4[[1]]
+```
+
+###绘制每个trait估计出的sig2与实际sig2分布比较的箱线图
+```{r}
+# 构建数据框并添加组别信息
+df_model1 <- data.frame(
+  id = as.factor(rep(paste(1:100,rep('M1',100),sep="_"),2)),
+  group = c(rep("mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier1_sig2, non_hier1_sig2_real),
+  model = "Model 1"
+)
+
+df_model2 <- data.frame(
+  id = as.factor(rep(paste(1:100,rep('M2',100),sep="_"),2)),
+  group = c(rep("mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier2_sig2, non_hier2_sig2_real),
+  model = "Model 2"
+)
+
+df_model3 <- data.frame(
+  id =as.factor(rep(paste(1:100,rep('M3',100),sep="_"),2)),
+  group = c(rep("mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier3_sig2, non_hier3_sig2_real),
+  model = "Model 3"
+)
+
+df_model4 <- data.frame(
+  id = as.factor(rep(paste(1:100,rep('M4',100),sep="_"),2)),
+  group = c(rep("mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier4_sig2, non_hier4_sig2_real),
+  model = "Model 4"
+)
+
+# 合并两组模型数据
+df_combined <- rbind(df_model1, df_model2,df_model3,df_model4)
+df_combined <- df_combined %>%
+  mutate(
+    x_adjusted = as.numeric(factor(model)) +  # 将模型名转换为数字
+      ifelse(group == "mean_estimates", -0.2, 0.2)  # 根据组别调整 x 位置
+  )
+
+df_filtered <- df_combined %>%
+  group_by(model, group) %>%  # 根据模型和组别计算
+  filter(value > quantile(value, 0.25) - 1.5 * IQR(value) &  # 保留在 IQR 范围内的点
+         value < quantile(value, 0.75) + 1.5 * IQR(value))
+```
+
+###检验估计值和实际值之间是否有显著性差别
+```{r}
+w1<-wilcox.test(value ~ group, data = df_model1)
+w2<-wilcox.test(value ~ group, data = df_model2)
+w3<-wilcox.test(value ~ group, data = df_model3)
+w4<-wilcox.test(value ~ group, data = df_model4)
+w5<-wilcox.test(value ~ group, data = df_model5)
+w6<-wilcox.test(value ~ group, data = df_model6)
+# 计算每个模型的 p 值
+p_values <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4"),
+  p_value = c(w1$p.value,w2$p.value,w3$p.value,w4$p.value),  # 这里假设 p 值
+  group1=rep('mean_estimates',4),
+  group2=rep('true_value',4),
+  y.position = c(0.3,0.3,0.3,0.3)
+)
+
+```
+
+```{r}
+# 绘制箱线图
+# 绘制图形
+p5<-ggplot(df_filtered, aes(x = model, y = value, fill = group)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7, position = position_dodge(width = 0.8)) +  # 绘制箱线图
+  geom_jitter(aes(color = group),size = 1.2, alpha = 0.6,position = position_dodge(width = 0.8),shape = 21, color = "black", stroke = 0.8)+
+  scale_fill_manual(values = c("mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义散点颜色
+  geom_line(aes(x = x_adjusted,group = id), data=df_filtered,color = "darkgray", alpha = 0.2)+
+  labs( x = "Group",y = "Value",fill = "group", color = "Model")+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.title   = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.text =  element_text(family = "Calibri", size = 16))  # 使用简洁主题
+
+
+ggsave(file.path(IMAGE_ROOT,'non_hier_move/sig2_estimate_boxplot_nop.jpg'),p5,width=10,height=8)
+```
+
+**估计值与真实值之间的分布图**
+```{r}
+p6<-ggplot(data=df_model1,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+  labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.001, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))  # 使用简洁主题
+
+
+p7<-ggplot(data=df_model2,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+  labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.01, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p8<-ggplot(data=df_model3,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+  labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.05, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 14,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p9<-ggplot(data=df_model4,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+  labs( x = "value",y = "frequency",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.1, 0.01)'))),fill = "group")+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+  legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p_nh_move_hist<-ggarrange(p6,p7,p8,p9,ncol=2,nrow = 2,align = 'hv',common.legend = TRUE)+theme(
+  legend.title =  element_blank(),
+  legend.text =  element_text(family = "Calibri", size = 16)
+)
+ggsave(file.path(IMAGE_ROOT,'non_hier_move/sig2_estimate_hist.jpg'),width=20,height=12)
+```
+
+```{r}
+df_plot1 <- df_model1 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = mean_estimates)
+df_plot2 <- df_model2 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = mean_estimates)
+df_plot3 <- df_model3 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = mean_estimates)
+df_plot4 <- df_model4 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = mean_estimates)
+```
+
+```{r}
+p10<-ggplot(df_plot1, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.001, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.25)+
+  ylim(0,0.25)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))  # 使用简洁主题
+
+p11<-ggplot(df_plot2, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.01, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.25)+
+  ylim(0,0.25)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p12<-ggplot(df_plot3, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.05, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.25)+
+  ylim(0,0.25)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p13<-ggplot(df_plot4, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.1, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.3)+
+  ylim(0,0.3)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p_nh_move_point<-ggarrange(p10,p11,p12,p13,ncol=2,nrow=2,align='hv')
+
+ggsave(file.path(IMAGE_ROOT,'non_hier_move/sig2_estimate_point.jpg'),p_nh_move_point,width=15,height=12)
+```
+
+```{r}
+Cal_Relative_absolute_error<-function(true_value,estimate_value){
+  median_estimate<-median(estimate_value)
+  rae<-abs(median_estimate-true_value)/true_value
+  return(rae)
+}
+
+Cal_Relative_absolute_mean<-function(true_value,estimate_value){
+  absoulte_diff<-abs(estimate_value-true_value)/true_value
+  return(mean(absoulte_diff))
+}
+
+Cal_coverage<-function(data,fit,Nt=100){
+  true_value<-data[[1]]
+  estimate_value<-as.data.frame(fit)[,1:Nt]
+  hpd_coverage<-0
+  for (i in 1:Nt){
+  hpd_interval<-hdi(estimate_value[,i],ci=0.95)
+  hpd_low<-hpd_interval$CI_low
+  hpd_high<-hpd_interval$CI_high
+  if(true_value[i]>=hpd_low & true_value[i]<=hpd_high){
+    hpd_coverage<-hpd_coverage+1
+  }
+  }
+  return(hpd_coverage/Nt)
+}
+
+
+```
+
+
+```{r}
+df_diff<-data.frame(value=c(abs(non_hier1_sig2-non_hier1_sig2_real)/non_hier1_sig2_real,abs(non_hier2_sig2-non_hier2_sig2_real)/non_hier2_sig2_real,abs(non_hier3_sig2-non_hier3_sig2_real)/non_hier3_sig2_real,abs(non_hier4_sig2-non_hier4_sig2_real)/non_hier4_sig2_real),group=c(rep('Model1',N_t),rep('Model2',N_t),rep('Model3',N_t),rep('Model4',N_t)))
+
+p_nh_move_diff_dist<-ggplot(df_diff, aes(x = value,fill = group)) + 
+  geom_density(aes(y = ..density..), linewidth=0.75,color='black',alpha = 0.4) + 
+scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3","#E39C20","#53B3E4")) +
+  theme_minimal() +
+  labs(
+       x = "Value of RAM",
+       y = "Density")+theme(
+    axis.text.x = element_text(family = "Calibri", size = 24), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+ggsave(file.path(IMAGE_ROOT,'non_hier_move/sig2_estimate_diff_dist.pdf'),p_nh_move_diff_dist,width=10,height=8)
+
+
+c(mean(abs(non_hier1_sig2-non_hier1_sig2_real)/non_hier1_sig2_real),mean(abs(non_hier2_sig2-non_hier2_sig2_real)/non_hier2_sig2_real),mean(abs(non_hier3_sig2-non_hier3_sig2_real)/non_hier3_sig2_real),mean(abs(non_hier4_sig2-non_hier4_sig2_real)/non_hier4_sig2_real))
+```
+### Experiment3：sig2~N(0.01,0.01) but prior distribution is set as N(0.05,0.01) and N(0.1,0.01)
+
+```{r}
+data<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_move_trait.rds'))
+fit0<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_move_model0.rds'))
+fit1<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_move_model1.rds'))
+fit2<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_move_model2.rds'))
+
+nh_move_sig2_real<-data[[1]]
+nh_move0_sig2_mean<-data.frame(mean_estimate0=apply(as.data.frame(fit0)[,1:100],2,mean))
+nh_move1_sig2_mean<-data.frame(mean_estimate1=apply(as.data.frame(fit1)[,1:100],2,mean))
+nh_move2_sig2_mean<-data.frame(mean_estimate2=apply(as.data.frame(fit2)[,1:100],2,mean))
+
+```
+
+
+```{r}
+df1 <- data.frame(
+  id = 1:100,  # 唯一ID
+  mean_estimate0 = nh_move0_sig2_mean,
+  mean_estimate1 = nh_move1_sig2_mean,
+  mean_estimate2 = nh_move2_sig2_mean,
+  true_value = nh_move_sig2_real
+)
+
+df_long <- tidyr::pivot_longer(
+  df1,
+  cols = c(mean_estimate0,mean_estimate1,mean_estimate2, true_value),
+  names_to = "group",
+  values_to = "value"
+)
+
+df_filtered <- df_long %>%
+  group_by(group) %>%  # 根据模型和组别计算
+  filter(value > quantile(value, 0.25) - 1.5 * IQR(value) &  # 保留在 IQR 范围内的点
+         value < quantile(value, 0.75) + 1.5 * IQR(value))
+```
+
+
+```{r}
+p14<-ggplot(df_filtered, aes(x = group, y = value, group = id)) +
+  geom_boxplot(aes(group = group), outlier.shape = NA, fill = c('#53B3E4',"#D179AF","#1E9B70","#E39C20"), alpha = 0.5,position = position_dodge(width = 0.8)) +  # 箱线图
+  geom_jitter(aes(fill = group),shape = 21, stroke = 0.8, size = 1.75,width = 0.05) +  # 散点图
+  geom_line(aes(group = id), color = "darkgray", alpha = 0.2) +  # 连线
+   scale_fill_manual(values = c("mean_estimate0"="#53B3E4","mean_estimate1" = "#D179AF", "mean_estimate2" = "#1E9B70","true_value"="#E39C20")) +
+  scale_color_manual(values = c("mean_estimate0"="#53B3E4","mean_estimate1" = "#D179AF", "mean_estimate2" ="#1E9B70","true_value"="#E39C20")) +  # 自定义颜色
+  labs(
+    x = "group",
+    y = "value"
+  ) +
+  theme_minimal()+ 
+  theme(legend.position = "none",
+        axis.text.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'))+scale_x_discrete(labels = c("mean_estimate0" = 'Model 1', "mean_estimate1" = 'Model 5', "mean_estimate2" = 'Model 6',"true_value"="true value"))
+
+ggsave(file.path(IMAGE_ROOT,'non_hier_wide/sig2_estimate_move_boxplot.jpg'),p14,width=10,height=8)
+```
+
+```{r}
+df_diff<-data.frame(value=c(df1$true_value-df1$mean_estimate0,df1$true_value-df1$mean_estimate1,df1$true_value-df1$mean_estimate2),
+                    group=c(rep("diff0",length(df1$true_value)),rep("diff1",length(df1$true_value)),rep("diff2",length(df1$true_value))))
+
+shapiro.test(df1$true_value-df1$mean_estimate0)
+shapiro.test(df1$true_value-df1$mean_estimate1)
+shapiro.test(df1$true_value-df1$mean_estimate2)
+
+kruskal.test(value ~ group, data = df_diff)
+
+Cal_Relative_absolute_mean(df1$true_value,df1$mean_estimate0)
+Cal_Relative_absolute_mean(df1$true_value,df1$mean_estimate1)
+Cal_Relative_absolute_mean(df1$true_value,df1$mean_estimate2)
+Cal_coverage(data,fit0)
+Cal_coverage(data,fit1)
+Cal_coverage(data,fit2)
+```
+##Uniform distribution
+```{r}
+data<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier4_data.rds'))
+fit0<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier4_fit.rds'))
+fit1<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_unif_model1.rds'))
+fit2<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_unif_model2.rds'))
+
+nh_unif_sig2_real<-data[[1]]
+nh_unif0_sig2_mean<-data.frame(mean_estimate0=apply(as.data.frame(fit0)[,1:100],2,mean))
+nh_unif1_sig2_mean<-data.frame(mean_estimate1=apply(as.data.frame(fit1)[,1:100],2,mean))
+nh_unif2_sig2_mean<-data.frame(mean_estimate2=apply(as.data.frame(fit2)[,1:100],2,mean))
+```
+
+```{r}
+df1 <- data.frame(
+  id = 1:100,  # 唯一ID
+  mean_estimate0 = nh_unif0_sig2_mean,
+  mean_estimate1 = nh_unif1_sig2_mean,
+  mean_estimate2 = nh_unif2_sig2_mean,
+  true_value = nh_unif_sig2_real
+)
+
+df_long <- tidyr::pivot_longer(
+  df1,
+  cols = c(mean_estimate0,mean_estimate1,mean_estimate2, true_value),
+  names_to = "group",
+  values_to = "value"
+)
+
+df_filtered <- df_long %>%
+  group_by(group) %>%  # 根据模型和组别计算
+  filter(value > quantile(value, 0.25) - 1.5 * IQR(value) &  # 保留在 IQR 范围内的点
+         value < quantile(value, 0.75) + 1.5 * IQR(value))
+
+```
+
+```{r}
+p14_2<-ggplot(df_filtered, aes(x = group, y = value, group = id)) +
+  geom_boxplot(aes(group = group), outlier.shape = NA, fill = c('#53B3E4',"#D179AF","#1E9B70","#E39C20"), alpha = 0.5,position = position_dodge(width = 0.8)) +  # 箱线图
+  geom_jitter(aes(fill = group),shape = 21, stroke = 0.8, size = 1.75,width = 0.05) +  # 散点图
+  geom_line(aes(group = id), color = "darkgray", alpha = 0.2) +  # 连线
+   scale_fill_manual(values = c("mean_estimate0"="#53B3E4","mean_estimate1" = "#D179AF", "mean_estimate2" = "#1E9B70","true_value"="#E39C20")) +
+  scale_color_manual(values = c("mean_estimate0"="#53B3E4","mean_estimate1" = "#D179AF", "mean_estimate2" ="#1E9B70","true_value"="#E39C20")) +  # 自定义颜色
+  labs(
+    x = "group",
+    y = "value"
+  ) +
+  theme_minimal()+ 
+  theme(legend.position = "none",
+        axis.text.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'))+scale_x_discrete(labels = c("mean_estimate0" = 'Model 1', "mean_estimate1" = 'Model 9', "mean_estimate2" = 'Model 10',"true_value"="true value"))
+
+ggsave(file.path(IMAGE_ROOT,'non_hier_wide/sig2_estimate_unif_boxplot.jpg'),p14_2,width=10,height=8)
+
+```
+
+##wide distribution
+```{r}
+data<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier1_data.rds'))
+fit0<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier1_fit.rds'))
+fit1<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_wide_model1.rds'))
+fit2<-readRDS(file.path(DATA_ROOT,'non_hier_wide/non_hier_wide_model2.rds'))
+
+nh_wide_sig2_real<-data[[1]]
+nh_wide0_sig2_mean<-data.frame(mean_estimate0=apply(as.data.frame(fit0)[,1:100],2,mean))
+nh_wide1_sig2_mean<-data.frame(mean_estimate1=apply(as.data.frame(fit1)[,1:100],2,mean))
+nh_wide2_sig2_mean<-data.frame(mean_estimate2=apply(as.data.frame(fit2)[,1:100],2,mean))
+```
+
+```{r}
+df1 <- data.frame(
+  id = 1:100,  # 唯一ID
+  mean_estimate0 = nh_wide0_sig2_mean,
+  mean_estimate1 = nh_wide1_sig2_mean,
+  mean_estimate2 = nh_wide2_sig2_mean,
+  true_value = nh_wide_sig2_real
+)
+
+df_long <- tidyr::pivot_longer(
+  df1,
+  cols = c(mean_estimate0,mean_estimate1,mean_estimate2, true_value),
+  names_to = "group",
+  values_to = "value"
+)
+
+df_filtered <- df_long %>%
+  group_by(group) %>%  # 根据模型和组别计算
+  filter(value > quantile(value, 0.25) - 1.5 * IQR(value) &  # 保留在 IQR 范围内的点
+         value < quantile(value, 0.75) + 1.5 * IQR(value))
+
+```
+
+```{r}
+p14_3<-ggplot(df_filtered, aes(x = group, y = value, group = id)) +
+  geom_boxplot(aes(group = group), outlier.shape = NA, fill = c('#53B3E4',"#D179AF","#1E9B70","#E39C20"), alpha = 0.5,position = position_dodge(width = 0.8)) +  # 箱线图
+  geom_jitter(aes(fill = group),shape = 21, stroke = 0.8, size = 1.75,width = 0.05) +  # 散点图
+  geom_line(aes(group = id), color = "darkgray", alpha = 0.2) +  # 连线
+   scale_fill_manual(values = c("mean_estimate0"="#53B3E4","mean_estimate1" = "#D179AF", "mean_estimate2" = "#1E9B70","true_value"="#E39C20")) +
+  scale_color_manual(values = c("mean_estimate0"="#53B3E4","mean_estimate1" = "#D179AF", "mean_estimate2" ="#1E9B70","true_value"="#E39C20")) +  # 自定义颜色
+  labs(
+    x = "group",
+    y = "value"
+  ) +
+  theme_minimal()+ 
+  theme(legend.position = "none",
+        axis.text.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'))+scale_x_discrete(labels = c("mean_estimate0" = 'Model 1', "mean_estimate1" = 'Model 7', "mean_estimate2" = 'Model 8',"true_value"="true value"))
+
+ggsave(file.path(IMAGE_ROOT,'non_hier_wide/sig2_estimate_wide_boxplot.jpg'),p14_3,width=10,height=8)
+
+```
+
+
+###hier model VS non_hier model
+```{r}
+###导入trait和non_hier结果
+data1<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier1_data.rds'))
+fit1<-readRDS(file.path(DATA_ROOT,'hier_move/hier_tree1_fit_reduction.rds'))
+data2<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier2_data.rds'))
+fit2<-readRDS(file.path(DATA_ROOT,'hier_move/hier_tree2_fit.rds'))
+data3<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier3_data.rds'))
+fit3<-readRDS(file.path(DATA_ROOT,'hier_move/hier_tree3_fit.rds'))
+data4<-readRDS(file.path(DATA_ROOT,'non_hier_move/non_hier4_data.rds'))
+fit4<-readRDS(file.path(DATA_ROOT,'hier_move/hier_tree4_fit.rds'))
+hier1_sig2 <- rstan::extract(fit1, permuted = TRUE)$sig2%>%
+  apply(2, mean)
+hier1_sig2_real<-data1[[1]]
+hier2_sig2 <- rstan::extract(fit2, permuted = TRUE)$sig2%>%
+  apply(2, mean)
+hier2_sig2_real<-data2[[1]]
+hier3_sig2 <- rstan::extract(fit3, permuted = TRUE)$sig2%>%
+  apply(2, mean)
+hier3_sig2_real<-data3[[1]]
+hier4_sig2 <- rstan::extract(fit4, permuted = TRUE)$sig2%>%
+  apply(2, mean)
+hier4_sig2_real<-data4[[1]]
+```
+
+```{r}
+# 构建数据框并添加组别信息
+df_model1 <- data.frame(
+  id = as.factor(rep(paste(1:100,rep('M1',100),sep="_"),3)),
+  group = c(rep("non_hier_mean_estimates", 100),rep("hier_mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier1_sig2,hier1_sig2, hier1_sig2_real),
+  model = "Model 1"
+)
+
+df_model2 <- data.frame(
+  id = as.factor(rep(paste(1:100,rep('M2',100),sep="_"),3)),
+  group = c(rep("non_hier_mean_estimates", 100),rep("hier_mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier2_sig2,hier2_sig2, hier2_sig2_real),
+  model = "Model 2"
+)
+
+df_model3 <- data.frame(
+  id =as.factor(rep(paste(1:100,rep('M3',100),sep="_"),3)),
+  group = c(rep("non_hier_mean_estimates", 100),rep("hier_mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier3_sig2,hier3_sig2,hier3_sig2_real),
+  model = "Model 3"
+)
+
+df_model4 <- data.frame(
+  id = as.factor(rep(paste(1:100,rep('M4',100),sep="_"),3)),
+  group = c(rep("non_hier_mean_estimates", 100),rep("hier_mean_estimates", 100), rep("true_value", 100)),
+  value = c(non_hier4_sig2,hier4_sig2, hier4_sig2_real),
+  model = "Model 4"
+)
+
+# 合并两组模型数据
+df_combined <- rbind(df_model1,df_model2,df_model3,df_model4)
+df_combined <- df_combined %>%
+  mutate(
+    x_adjusted = as.numeric(factor(model)) +  # 将模型名转换为数字
+      ifelse(group == "mean_estimates", -0.2, 0.2)  # 根据组别调整 x 位置
+  )
+df_combined$group <- factor(df_combined$group, levels = c("non_hier_mean_estimates", "hier_mean_estimates", "true_value"))
+
+df_filtered <- df_combined %>%
+  group_by(model, group) %>%  # 根据模型和组别计算
+  filter(value > quantile(value, 0.25) - 1.5 * IQR(value) &  # 保留在 IQR 范围内的点
+         value < quantile(value, 0.75) + 1.5 * IQR(value))
+```
+
+
+```{r}
+# 绘制箱线图
+# 绘制图形
+p15<-ggplot(df_filtered, aes(x = model, y = value, fill = group,linetype = group)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7, position = position_dodge(width = 0.8),linewidth=0.6) +  # 绘制箱线图
+  geom_jitter(aes(color = group),size = 1.2, alpha = 0.6,position = position_dodge(width = 0.8),shape = 21, color = "black", stroke = 0.8) +  # 添加散点图
+    geom_line(aes(x = x_adjusted,group = id,linetype = "solid"), data=df_filtered,color = "darkgray", alpha = 0.2)+
+  scale_fill_manual(values = c("non_hier_mean_estimates"="white","hier_mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("non_hier_mean_estimates"="white","mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义散点颜色
+  scale_linetype_manual(values = c("non_hier_mean_estimates" = "dashed", "hier_mean_estimates" = "solid", "true_value" = "solid")) +
+  labs( x = "Group",y = "Value",fill = "group", color = "Model")+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.title   = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.text =  element_text(family = "Calibri", size = 16))  # 使用简洁主题
+
+ggsave(file.path(IMAGE_ROOT,'hier_move/sig2_estimate_boxplot.jpg'),p15,width=12,height=10)
+```
+
+
+
+```{r}
+p16<-ggplot(data=df_model1,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("non_hier_mean_estimates"="lightgray","hier_mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("non_hier_mean_estimates"="gray","hier_mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+   labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.001, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 14,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p17<-ggplot(data=df_model2,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("non_hier_mean_estimates"="lightgray","hier_mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("non_hier_mean_estimates"="gray","hier_mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+
+  labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.01, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 14,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p18<-ggplot(data=df_model3,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30,alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+   scale_fill_manual(values = c("non_hier_mean_estimates"="lightgray","hier_mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("non_hier_mean_estimates"="gray","hier_mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+   labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.05, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 14,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p19<-ggplot(data=df_model4,aes(x = value,fill=group,color=group)) +
+  geom_histogram(bins = 30, alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  scale_fill_manual(values = c("non_hier_mean_estimates"="lightgray","hier_mean_estimates" = "#53B3E4", "true_value" = "#D179AF")) +  # 自定义箱线图颜色
+  scale_color_manual(values = c("non_hier_mean_estimates"="gray","hier_mean_estimates" = "#0070C0", "true_value" = "#C75D9F"))+  # 自定义线条颜色
+  labs( x = "value",y = "frequency",fill = "group",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.1, 0.01)'))))+theme_minimal() +theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 16),
+    title  = element_text(family = "Calibri", size = 14,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+
+p_nh_move_hist<-ggarrange(p16,p17,p18,p19,ncol=2,nrow = 2,align = 'hv',common.legend = TRUE)
+ggsave(file.path(IMAGE_ROOT,'hier_move/sig2_estimate_hist.jpg'),width=20,height=12)
+```
+
+
+```{r}
+df_plot1 <- df_model1 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = hier_mean_estimates)
+df_plot2 <- df_model2 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = hier_mean_estimates)
+df_plot3 <- df_model3 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = hier_mean_estimates)
+df_plot4 <- df_model4 %>%
+  pivot_wider(names_from = group, values_from = value) %>%
+  rename(x = true_value, y = hier_mean_estimates)
+```
+
+```{r}
+df_wilcox1<-data.frame(id = rep(1:100,each=2),value=c(hier1_sig2,hier1_sig2_real),group=c(rep("hier_mean_estimates",100),rep("true_value",100)))
+df_wilcox2<-data.frame(id = rep(1:100,2),value=c(hier2_sig2,hier2_sig2_real),group=c(rep("hier_mean_estimates",100),rep("true_value",100)))
+df_wilcox3<-data.frame(id = rep(1:100,2),value=c(hier3_sig2,hier3_sig2_real),group=c(rep("hier_mean_estimates",100),rep("true_value",100)))
+df_wilcox4<-data.frame(id = rep(1:100,2),value=c(hier4_sig2,hier4_sig2_real),group=c(rep("hier_mean_estimates",100),rep("true_value",100)))
+wilcox.test(non_hier1_sig2,non_hier1_sig2_real,paired=TRUE)
+wilcox.test(non_hier2_sig2,non_hier2_sig2_real,paired=TRUE)
+wilcox.test(non_hier3_sig2,non_hier3_sig2_real,paired=TRUE)
+wilcox.test(non_hier4_sig2,non_hier4_sig2_real,paired=TRUE)
+```
+
+```{r}
+p20<-ggplot(df_plot1, aes(x = x, y = y)) +
+  geom_point(aes(color='hier_mean_estimates'),fill = "#1E9B70",shape=21, size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点'
+   geom_point(aes(y = non_hier_mean_estimates,color='non_hier_mean_estimates'),shape=21,fill=NA,size = 2.5,alpha=0.9,stroke=0.6)+
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  scale_color_manual(values = c("hier_mean_estimates" = "black", "non_hier_mean_estimates" = "black"))+
+  labs( x = "True sig2",y = "Hier Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.001, 0.01)'))),color='group')+
+  theme_minimal() +
+  xlim(0,0.25)+
+  ylim(0,0.25)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "right", 
+    legend.title = element_text(size = 22, face = "bold"),
+    legend.text = element_text(size = 20),
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))  # 使用简洁主题
+
+p21<-ggplot(df_plot2, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+  geom_point(aes(y = non_hier_mean_estimates),color='black',shape=21,fill=NA,size = 2.5,alpha=0.9,stroke=0.6)+
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Hier Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.01, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.25)+
+  ylim(0,0.25)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p22<-ggplot(df_plot3, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+    geom_point(aes(y = non_hier_mean_estimates),color='black',shape=21,fill=NA,size = 2.5,alpha=0.9,stroke=0.6)+
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Hier Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.05, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.25)+
+  ylim(0,0.25)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p23<-ggplot(df_plot4, aes(x = x, y = y)) +
+  geom_point(fill = "#1E9B70",shape=21,color='black', size = 2.5,alpha=0.9,stroke=0.6) +  # 绘制散点
+    geom_point(aes(y = non_hier_mean_estimates),color='black',shape=21,fill=NA,size = 2.5,alpha=0.9,stroke=0.6)+
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "#1E9B70",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "True sig2",y = "Hier Estimated sig2",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.1, 0.01)'))))+
+  theme_minimal() +
+  xlim(0,0.3)+
+  ylim(0,0.3)+
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 20), 
+    axis.text.y = element_text(family = "Calibri", size = 20),
+    axis.title.x = element_text(family = "Calibri", size = 22,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 22,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 22,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p_nh_move_point<-ggarrange(p20,p21,p22,p23,ncol=2,nrow=2,align='hv',common.legend = TRUE,legend='right')
+ggsave(file.path(IMAGE_ROOT,'hier_move/sig2_estimate_point.jpg'),p_nh_move_point,width=18,height=12)
+```
+
+```{r}
+##散点图中各个点距离中心dash line的距离分布
+df_dot_diff1<-data.frame(value=c(abs(df_plot1$non_hier_mean_estimates-df_plot1$x)/sqrt(2),abs(df_plot1$y-df_plot1$x)/sqrt(2)),group=c(rep("non_hier_mean_estimates",100),rep("hier_mean_estimates",100)))
+df_dot_diff2<-data.frame(value=c(abs(df_plot2$non_hier_mean_estimates-df_plot2$x)/sqrt(2),abs(df_plot2$y-df_plot2$x)/sqrt(2)),group=c(rep("non_hier_mean_estimates",100),rep("hier_mean_estimates",100)))
+df_dot_diff3<-data.frame(value=c(abs(df_plot3$non_hier_mean_estimates-df_plot3$x)/sqrt(2),abs(df_plot3$y-df_plot3$x)/sqrt(2)),group=c(rep("non_hier_mean_estimates",100),rep("hier_mean_estimates",100)))
+df_dot_diff4<-data.frame(value=c(abs(df_plot4$non_hier_mean_estimates-df_plot4$x)/sqrt(2),abs(df_plot4$y-df_plot4$x)/sqrt(2)),group=c(rep("non_hier_mean_estimates",100),rep("hier_mean_estimates",100)))
+
+```
+
+```{r}
+p24<-ggplot(df_dot_diff1, aes(x = value,fill=group)) + 
+  geom_histogram(bins = 30,color='black',alpha = 0.4,position = "dodge") +
+    scale_fill_manual(values = c("non_hier_mean_estimates"="red","hier_mean_estimates" = "#1E9B70"))+
+  theme_minimal() +
+  labs(title=expression(bold(paste(sigma^2, " ~ ", 'N(0.001, 0.01)'))),
+       x = "Distance to the true value",
+       y = "Frequency")+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.text = element_text(family = "Calibri", size = 18),
+    legend.position = 'top',
+    plot.title = element_text(hjust = 0.5))
+
+p25<-ggplot(df_dot_diff2, aes(x = value,fill=group)) + 
+  geom_histogram(bins = 30,color='black',alpha = 0.4,position = "dodge") +
+    scale_fill_manual(values = c("non_hier_mean_estimates"="red","hier_mean_estimates" = "#1E9B70"))+
+  theme_minimal() +
+  labs(title=expression(bold(paste(sigma^2, " ~ ", 'N(0.01, 0.01)'))),
+       x = "Distance to the true value",
+       y = "Frequency")+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    plot.title = element_text(hjust = 0.5))
+
+p26<-ggplot(df_dot_diff3, aes(x = value,fill=group)) + 
+  geom_histogram(bins = 30,color='black',alpha = 0.4,position = "dodge") +
+    scale_fill_manual(values = c("non_hier_mean_estimates"="red","hier_mean_estimates" = "#1E9B70"))+
+  theme_minimal() +
+  labs(title=expression(bold(paste(sigma^2, " ~ ", 'N(0.05, 0.01)'))),
+       x = "Distance to the true value",
+       y = "Frequency")+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    plot.title = element_text(hjust = 0.5))
+
+p27<-ggplot(df_dot_diff4, aes(x = value,fill=group)) + 
+  geom_histogram(bins = 30,color='black',alpha = 0.4,position = "dodge") +
+    scale_fill_manual(values = c("non_hier_mean_estimates"="red","hier_mean_estimates" = "#1E9B70"))+
+  theme_minimal() +
+  labs(title=expression(bold(paste(sigma^2, " ~ ", 'N(0.1, 0.01)'))),
+       x = "Distance to the true value",
+       y = "Frequency")+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    legend.position = "none",
+    plot.title = element_text(hjust = 0.5))
+
+p_h_dot_distance_dist<-ggarrange(p24,p25,p26,p27,ncol=2,nrow=2,align='hv',common.legend = TRUE,legend = 'top')
+ggsave(file.path(IMAGE_ROOT,'hier_move/sig2_estimate_distance_dist.jpg'),p_h_dot_distance_dist,width=15,height=12)
+```
+
+```{r}
+##compare non hier vs hier
+df_dot_diff_plot1 <-data.frame(non_hier_mean_estimates=abs(df_plot1$non_hier_mean_estimates-df_plot1$x)/sqrt(2),hier_mean_estimates=abs(df_plot1$y-df_plot1$x)/sqrt(2))
+
+df_dot_diff_plot2 <-data.frame(non_hier_mean_estimates=abs(df_plot2$non_hier_mean_estimates-df_plot2$x)/sqrt(2),hier_mean_estimates=abs(df_plot2$y-df_plot2$x)/sqrt(2))
+
+df_dot_diff_plot3 <-data.frame(non_hier_mean_estimates=abs(df_plot3$non_hier_mean_estimates-df_plot3$x)/sqrt(2),hier_mean_estimates=abs(df_plot3$y-df_plot3$x)/sqrt(2))
+
+df_dot_diff_plot4 <-data.frame(non_hier_mean_estimates=abs(df_plot4$non_hier_mean_estimates-df_plot4$x)/sqrt(2),hier_mean_estimates=abs(df_plot4$y-df_plot4$x)/sqrt(2))
+```
+
+```{r}
+p28<-ggplot(df_dot_diff_plot1, aes(x = non_hier_mean_estimates, y = hier_mean_estimates)) +
+  geom_point(fill = "red",shape=21,color='black', size = 2.5,alpha=0.4,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "Distance under Non-Hierarchical Model",y = "Distanceunder Hierarchical Model",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.001, 0.01)'))))+
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+
+p29<-ggplot(df_dot_diff_plot2, aes(x = non_hier_mean_estimates, y = hier_mean_estimates)) +
+  geom_point(fill = "red",shape=21,color='black', size = 2.5,alpha=0.4,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red",linewidth=0.8) +  # 添加斜率为1的直线
+ labs( x = "Distance under Non-Hierarchical Model",y = "Distanceunder Hierarchical Model",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.01, 0.01)'))))+
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p30<-ggplot(df_dot_diff_plot3, aes(x = non_hier_mean_estimates, y = hier_mean_estimates)) +
+  geom_point(fill = "red",shape=21,color='black', size = 2.5,alpha=0.4,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red",linewidth=0.8) +  # 添加斜率为1的直线
+ labs( x = "Distance under Non-Hierarchical Model",y = "Distanceunder Hierarchical Model",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.05, 0.01)'))))+
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p31<-ggplot(df_dot_diff_plot4, aes(x = non_hier_mean_estimates, y = hier_mean_estimates)) +
+  geom_point(fill = "red",shape=21,color='black', size = 2.5,alpha=0.4,stroke=0.6) +  # 绘制散点
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red",linewidth=0.8) +  # 添加斜率为1的直线
+  labs( x = "Distance under Non-Hierarchical Model",y = "Distanceunder Hierarchical Model",title=expression(bold(paste(sigma^2, " ~ ", 'N(0.1, 0.01)'))))+
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 16,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 16,face = 'bold'),
+    legend.position = "none",
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5)) 
+
+p_h_nh_point<-ggarrange(p28,p29,p30,p31,ncol=2,nrow=2,align='hv')
+
+ggsave(file.path(IMAGE_ROOT,'hier_move/sig2_estimate_nh_VS_h_point.jpg'),p_h_nh_point,width=15,height=12)
+```
+
+```{r}
+Cal_coverage_hier<-function(data,fit,Nt=100){
+  true_value<-data[[1]]
+  estimate_value<-rstan::extract(fit, permuted = TRUE)$sig2
+  hpd_coverage<-0
+  for (i in 1:Nt){
+  hpd_interval<-hdi(estimate_value[,i],ci=0.95)
+  hpd_low<-hpd_interval$CI_low
+  hpd_high<-hpd_interval$CI_high
+  if(true_value[i]>=hpd_low & true_value[i]<=hpd_high){
+    hpd_coverage<-hpd_coverage+1
+  }
+  }
+  return(hpd_coverage/Nt)
+}
+
+```
+
+```{r}
+hier1_tau <- rstan::extract(fit1, permuted = TRUE)$tau
+hier2_tau <- rstan::extract(fit2, permuted = TRUE)$tau
+hier3_tau <- rstan::extract(fit3, permuted = TRUE)$tau
+hier4_tau <- rstan::extract(fit4, permuted = TRUE)$tau
+df_tau1<-data.frame(value=hier1_tau)
+df_tau2<-data.frame(value=hier2_tau)
+df_tau3<-data.frame(value=hier3_tau)
+df_tau4<-data.frame(value=hier4_tau)
+```
+
+```{r}
+hier1_mu <- rstan::extract(fit1, permuted = TRUE)$mu
+hier2_mu <- rstan::extract(fit2, permuted = TRUE)$mu
+hier3_mu <- rstan::extract(fit3, permuted = TRUE)$mu
+hier4_mu <- rstan::extract(fit4, permuted = TRUE)$mu
+df_mu1<-data.frame(value=hier1_mu)
+df_mu2<-data.frame(value=hier2_mu)
+df_mu3<-data.frame(value=hier3_mu)
+df_mu4<-data.frame(value=hier4_mu)
+
+```
+
+```{r}
+p32<-ggplot(df_tau1, aes(x = value)) +
+  geom_histogram(bins = 20,color="#1E9B70",fill = "#1E9B70", alpha = 0.3) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_tau1$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.1, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.001,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p33<-ggplot(df_tau2, aes(x = value)) +
+  geom_histogram(bins = 20,color="#1E9B70",fill = "#1E9B70", alpha = 0.3) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_tau2$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.1, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.01,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p34<-ggplot(df_tau3, aes(x = value)) +
+  geom_histogram(bins = 20,color="#1E9B70",fill = "#1E9B70", alpha = 0.3) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_tau3$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.1, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.05,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p35<-ggplot(df_tau4, aes(x = value)) +
+  geom_histogram(bins = 20,color="#1E9B70",fill = "#1E9B70", alpha = 0.3) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_tau4$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.1, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.1,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p_h_tau_hist<-ggarrange(p32,p33,p34,p35,ncol=2,nrow=2,align='hv')
+
+ggsave(file.path(IMAGE_ROOT,'hier_move/tau_estimate_hist.jpg'),p_h_tau_hist,width=15,height=12)
+```
+
+
+```{r}
+p36<-ggplot(df_mu1, aes(x = value)) +
+  geom_histogram(bins = 20,color="#0070C0",fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_mu1$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.001, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.001,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p37<-ggplot(df_mu2, aes(x = value)) +
+  geom_histogram(bins = 20,color="#0070C0",fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_mu2$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.01, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.01,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p38<-ggplot(df_mu3, aes(x = value)) +
+  geom_histogram(bins = 20,color="#0070C0",fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_mu3$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.05, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.05,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p39<-ggplot(df_mu4, aes(x = value)) +
+  geom_histogram(bins = 20,color="#0070C0",fill = "#53B3E4", alpha = 0.4) +  # 绘制密度图，填充为浅蓝色
+  geom_vline(xintercept = mean(df_mu4$value), color = "#D179AF", linetype = "dashed", linewidth = 1.2) +  # 添加虚线表示估计的均值
+  geom_vline(xintercept = 0.1, color = "#E39C20", linetype = "dashed", linewidth = 1.2) +
+  labs(x = "value",y = "density",title = 'sig2~N(0.1,0.01)') +theme_minimal()+ theme(
+    axis.text.x = element_text(family = "Calibri", size = 16), 
+    axis.text.y = element_text(family = "Calibri", size = 16),
+    axis.title.x = element_text(family = "Calibri", size = 18,face = 'bold'), 
+    axis.title.y = element_text(family = "Calibri", size = 18,face = 'bold'),
+    title  = element_text(family = "Calibri", size = 18,face = 'bold'),
+    plot.title = element_text(hjust = 0.5))
+
+p_h_mu_hist<-ggarrange(p36,p37,p38,p39,ncol=2,nrow=2,align='hv')
+
+ggsave(file.path(IMAGE_ROOT,'hier_move/mu_estimate_hist.jpg'),p_h_mu_hist,width=15,height=12)
+```
+
+
