@@ -1,0 +1,2 @@
+Here are the code we used in the Project: Mathematical modelling of phenotypic evolution in cancer, as my Project 1 in MRes Biomedical Research (DS Stream) at Imperial College London.
+Here we upload the code for trait simulation, the R code we use to run the Bayesian Statistical Inference (just upload Model 1 as an example as the others are similar). Besides we also upload the Stan file we used for non-hierarchical and hierarchical model. Additionally, the code for all figures in the thesis were also uploaded as 'Visualization.Rmd' file.
